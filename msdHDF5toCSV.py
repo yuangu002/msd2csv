@@ -46,7 +46,6 @@ class Song:
         Song.songCount += 1
         # Song.songDictionary[songID] = self
 
-
         self.duration = None
         self.genreList = []
         self.keySignature = None
@@ -57,19 +56,29 @@ class Song:
         self.timeSignature = None
         self.timeSignatureConfidence = None
         self.year = None
-
-
         #--------------------- Added fields ------------------------#
+        self.artistTermFrequency = None
+        self.artistTermWeight = None
         self.artistHotttness = None
         self.barsConfidence = None
+        self.barsStart = None
+        self.beatsStart = None
         self.beatsConfidence = None
         self.loudness = None
         self.mode = None
         self.modeConfidence = None
+        self.energy = None
         self.sectionsConfidence = None
+        self.sectionsStart = None
         self.segmentsConfidence = None
+        self.segmentsLoudnessMax = None
         self.segmentsLoudnessMaxTime = None
+        self.segmentsLoudnessStart = None
+        self.segmentsPitches = None
+        self.segmentsStart = None
+        self.segmentsTimbre = None
         self.tatumConfidence = None
+        self.tatumStart = None
         self.startOfFadeOut = None
         self.endOfFadeIn = None
         self.songHotttness = None
@@ -183,8 +192,11 @@ def main():
         csvRowString = (
             "Duration,KeySignature,"+
             "KeySignatureConfidence,Tempo,TimeSignature,TimeSignatureConfidence,"+
-            "Year," + "ArtistHotttness,Loudness,Mode,ModeConfidence," +
-                "StartOfFadeOut,EndOfFadeIn,SongHotttness")
+            "Year,ArtistHotttness,ArtistTermFrequency,ArtistTermWeight,BarsConfidence,BarsStart,BeatsConfidence,BeatsStart," +
+            "Loudness,Mode,ModeConfidence,Energy," +
+            "SectionsConfidence,SectionsStart,SegmentsConfidence,SegmentsLoudnessMax,SegmentsLoudnessMaxTime,SegmentsLoudnessStart," +
+            "SegmentsPitches,SegmentsStart,SegmentsTimbre,TatumConfidence,TatumStart," +
+            "StartOfFadeOut,EndOfFadeIn,SongHotttness")
         #################################################
 
         csvAttributeList = re.split('\W+', csvRowString)
@@ -192,7 +204,7 @@ def main():
             csvAttributeList[i] = csvAttributeList[i].lower()
         outputFile1.write("SongNumber,")
         outputFile1.write(csvRowString + "\n")
-        csvRowString = ""  
+        csvRowString = ""
 
     #################################################
 
@@ -228,17 +240,29 @@ def main():
             song.timeSignatureConfidence = str(hdf5_getters.get_time_signature_confidence(songH5File))
             song.year = str(hdf5_getters.get_year(songH5File))
 
+            song.artistTermFrequency = str(hdf5_getters.get_artist_terms_freq(songH5File))
+            song.artistTermWeight = str(hdf5_getters.get_artist_terms_weight(songH5File))
+            song.barsStart = str(hdf5_getters.get_bars_start(songH5File))
+            song.beatsStart = str(hdf5_getters.get_beats_start(songH5File))
+            song.energy = str(hdf5_getters.get_energy(songH5File))
+            song.sectionsStart = str(hdf5_getters.get_sections_start(songH5File))
+            song.segmentsLoudnessMax = str(hdf5_getters.get_segments_loudness_max(songH5File))
+            song.segmentsLoudnessStart = str(hdf5_getters.get_segments_loudness_start(songH5File))
+            song.segmentsPitches = str(hdf5_getters.get_segments_pitches(songH5File))
+            song.segmentsStart = str(hdf5_getters.get_segments_start(songH5File))
+            song.segmentsTimbre = str(hdf5_getters.get_segments_timbre(songH5File))
+            song.tatumStart = str(hdf5_getters.get_tatums_start(songH5File))
 
             song.artistHotttness = str(hdf5_getters.get_artist_hotttnesss(songH5File))
-            #song.barsConfidence = str(hdf5_getters.get_bars_confidence(songH5File))
-            #song.beatsConfidence = str(hdf5_getters.get_beats_confidence(songH5File))
+            song.barsConfidence = str(hdf5_getters.get_bars_confidence(songH5File))
+            song.beatsConfidence = str(hdf5_getters.get_beats_confidence(songH5File))
             song.loudness = str(hdf5_getters.get_loudness(songH5File))
             song.mode = str(hdf5_getters.get_mode(songH5File))
             song.modeConfidence = str(hdf5_getters.get_mode_confidence(songH5File))
-            #song.sectionsConfidence = str(hdf5_getters.get_sections_confidence(songH5File))
-            #song.segmentsConfidence = str(hdf5_getters.get_segments_confidence(songH5File))
-            #song.segmentsLoudnessMaxTime = str(hdf5_getters.get_segments_loudness_max_time(songH5File))
-            #song.tatumConfidence = str(hdf5_getters.get_tatums_confidence(songH5File))
+            song.sectionsConfidence = str(hdf5_getters.get_sections_confidence(songH5File))
+            song.segmentsConfidence = str(hdf5_getters.get_segments_confidence(songH5File))
+            song.segmentsLoudnessMaxTime = str(hdf5_getters.get_segments_loudness_max_time(songH5File))
+            song.tatumConfidence = str(hdf5_getters.get_tatums_confidence(songH5File))
             song.startOfFadeOut = str(hdf5_getters.get_start_of_fade_out(songH5File))
             song.endOfFadeIn = str(hdf5_getters.get_end_of_fade_in(songH5File))
 
@@ -248,7 +272,7 @@ def main():
             csvRowString += str(song.songCount) + ","
 
             for attribute in csvAttributeList:
-                # print "Here is the attribute: " + attribute + " \n"
+                #print ("Here is the attribute: " + attribute + " \n")
 
                 
                 if attribute == 'Duration'.lower():
@@ -269,34 +293,57 @@ def main():
                 elif attribute == 'Year'.lower():
                     csvRowString += song.year
 
-                #" ArtistHotttness, BarsConfidence, BeatsConfidence, Loudness, Mode, ModeConfidence, Key, KeyConfidence," +
-                #" SectionsConfidence, SegmentsConfidence, SegmentsLoudnessMaxTime, TatumConfidence, StartOfFadeOut, SongHotttness,"
                 elif attribute == 'ArtistHotttness'.lower():
                     csvRowString += song.artistHotttness
-                #elif attribute == 'BarsConfidence'.lower():
-                    #csvRowString += song.barsConfidence
-                #elif attribute == 'BeatsConfidence'.lower():
-                    #csvRowString += song.beatsConfidence
+                elif attribute == 'BarsConfidence'.lower():
+                    csvRowString += song.barsConfidence
+                elif attribute == 'BeatsConfidence'.lower():
+                    csvRowString += song.beatsConfidence
                 elif attribute == 'Loudness'.lower():
                     csvRowString += song.loudness
                 elif attribute == 'Mode'.lower():
                     csvRowString += song.mode
                 elif attribute == 'ModeConfidence'.lower():
                     csvRowString += song.modeConfidence
-                #elif attribute == 'SectionsConfidence'.lower():
-                    #csvRowString += song.sectionsConfidence
-                #elif attribute == 'SegmentsConfidence'.lower():
-                    #csvRowString += song.segmentsConfidence
-                #elif attribute == 'SegmentsLoudnessMaxTime'.lower():
-                    #csvRowString += song.segmentsLoudnessMaxTime
-                #elif attribute == 'TatumConfidence'.lower():
-                    #csvRowString += song.tatumConfidence
+                elif attribute == 'SectionsConfidence'.lower():
+                    csvRowString += song.sectionsConfidence
+                elif attribute == 'SegmentsConfidence'.lower():
+                    csvRowString += song.segmentsConfidence
+                elif attribute == 'SegmentsLoudnessMaxTime'.lower():
+                    csvRowString += song.segmentsLoudnessMaxTime
+                elif attribute == 'TatumConfidence'.lower():
+                    csvRowString += song.tatumConfidence
                 elif attribute == 'StartOfFadeOut'.lower():
                     csvRowString += song.startOfFadeOut
                 elif attribute == 'EndOfFadeIn'.lower():
                     csvRowString += song.endOfFadeIn
                 elif attribute == 'SongHotttness'.lower():
                     csvRowString += song.songHotttness
+
+                elif attribute == 'ArtistTermFrequency'.lower():
+                    csvRowString += song.artistTermFrequency
+                elif attribute == 'ArtistTermWeight'.lower():
+                    csvRowString += song.artistTermWeight
+                elif attribute == 'BarsStart'.lower():
+                    csvRowString += song.barsStart
+                elif attribute == 'BeatsStart'.lower():
+                    csvRowString += song.beatsStart
+                elif attribute == 'Energy'.lower():
+                    csvRowString += song.energy
+                elif attribute == 'SectionsStart'.lower():
+                    csvRowString += song.sectionsStart
+                elif attribute == 'SegmentsLoudnessMax'.lower():
+                    csvRowString += song.segmentsLoudnessMax
+                elif attribute == 'SegmentsLoudnessStart'.lower():
+                    csvRowString += song.segmentsLoudnessStart
+                elif attribute == 'SegmentsPitches'.lower():
+                    csvRowString += song.segmentsPitches
+                elif attribute == 'SegmentsStart'.lower():
+                    csvRowString += song.segmentsStart
+                elif attribute == 'SegmentsTimbre'.lower():
+                    csvRowString += song.segmentsTimbre
+                elif attribute == 'TatumStart'.lower():
+                    csvRowString += song.tatumStart
 
 
                 else:
